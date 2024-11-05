@@ -1,5 +1,6 @@
 import { delay } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 import { Jura } from 'next/font/google'
 import { IoIosMenu, IoMdClose } from 'react-icons/io'
 import { Button, Card } from '@nextui-org/react';
@@ -25,7 +26,94 @@ export default function LandingPage({
 }: {
     language?: String
 }) {
-   
+    const [isScrollAtTop, setIsScrollAtTop] = useState(true);
+    const [selectedPage, setSelectedPage] = useState('#Home');
+    const cubeRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        // Scene
+        const scene = new THREE.Scene();
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        // Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 1, 1).normalize();
+        scene.add(light);
+
+        // Object 
+        const cubeGeo = new THREE.BoxGeometry(3, 1, 3);
+        const cubeMaterial = new THREE.MeshStandardMaterial({ color: "#000000" });
+        const rotatingCube = new THREE.Mesh(cubeGeo, cubeMaterial);
+        rotatingCube.position.y = 1.5;
+        rotatingCube.position.z = 0.3;
+        rotatingCube.position.x = 0;
+
+
+        rotatingCube.rotation.x = 0.5;
+        rotatingCube.rotation.y = 0.5;
+        scene.add(rotatingCube);
+
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0.6, 
+            opacity: 0.2, 
+            transmission: 0.8, 
+            clearcoat: 0.5, 
+            ior: 1.5, 
+        });
+        const pedestalGeo = new THREE.BoxGeometry(4.5, 1.5, 4.5);
+        const pedestal = new THREE.Mesh(pedestalGeo, glassMaterial);
+        pedestal.position.y = 0.5;
+        pedestal.rotation.x = 0.5;
+        pedestal.rotation.y = 0.7;
+        scene.add(pedestal);
+
+        // Renderer with transparent background
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        if (cubeRef.current) {
+            cubeRef.current.appendChild(renderer.domElement);
+        }
+
+        // Resize function
+        const resizeRendererToDisplaySize = () => {
+            if (cubeRef.current) {
+                const width = cubeRef.current.clientWidth;
+                const height = cubeRef.current.clientHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        };
+
+        // Resize Observer
+        const resizeObserver = new ResizeObserver(() => {
+            resizeRendererToDisplaySize();
+        });
+
+        // Only observe if cubeRef.current is not null
+        if (cubeRef.current) {
+            resizeObserver.observe(cubeRef.current);
+        }
+
+        // Animation loop
+        const animate = () => {
+            requestAnimationFrame(animate);
+            rotatingCube.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        };
+        animate();
+
+        return () => {
+            if (cubeRef.current) {
+                cubeRef.current.removeChild(renderer.domElement);
+                resizeObserver.unobserve(cubeRef.current); // Clean up the observer
+            }
+            renderer.dispose();
+        };
+    }, []);
+
 
     function goToPage(page: string): void {
         setSelectedPage(page);
@@ -36,6 +124,7 @@ export default function LandingPage({
         <div id='Home' className='flex md:flex-row  flex-col-reverse justify-between items-center  bg-gray-50 gridbg left-0 top-0 w-full'>
              <div className='lg:w-6/12 w-full h-[100dvh] bg-white flex flex-col justify-center md:pt-64  pt-32 pb-32 items-center'>
                 <div className={`${jura.className} text-2xl`}>Prism Glasses</div>
+                <div ref={cubeRef} className='w-full h-96' />
                 <div className=' w-full flex flex-col items-center space-y-4'>
                     <div className='flex justify-between w-3/6'>
                         <div>
