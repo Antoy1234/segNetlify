@@ -29,6 +29,10 @@ export default function Pricing({
     const [selectedPart, setSelectedPart] = useState("Frames")
     const [navBarOpen, setNavbarOpen] = useState(false)
     const [currentData, setCurrentData] = useState(framesInfo)
+    const [curFrame, setCurFrame] = useState("Full-Rimmed")
+    const [curLens, setCurLens] = useState("Multifocal")
+    const [curTemple, setCurTemple] = useState("Skull")
+
     const [cart, setCard] = useState([
         {
             label: "Frame",
@@ -65,7 +69,7 @@ export default function Pricing({
 
     return (
         <div id='Pricing' className='flex flex-col justify-between items-center z-50 h-auto left-0 top-0 w-full'>
-            <Card className='grid md:grid-cols-3 grid-cols-1 justify-center items-center w-full max-h-[400px] h-full bg-white'>
+            {/* <Card className='grid md:grid-cols-3 grid-cols-1 justify-center items-center w-full max-h-[400px] h-full bg-white'>
                 <div className={`flex flex-col justify-center space-y-4 text-center text-5xl bg-gray-50 h-full items-center ${jura.className}`}>
                     <div className='z-20'>Different</div>
                     <div>Frame</div>
@@ -81,11 +85,50 @@ export default function Pricing({
                         <Image className='h-48' src='gucciex_.jpg' />
                     </div>
                 </div>
-                <div className='flex justify-center h-full items-center bg-black text-[#ffbf00]'>
+                <div className='flex justify-center h-full items-center bg-purple-gradient opacity-20  text-black'>
                     coming xx.xx.xxxx
                 </div>
-            </Card>
+            </Card> */}
+                <div className={`text-5xl font-bold ${jura.className} mt-10 mb-4 border-b-1 border-black/50 pb-2 `}>Pricing</div>
 
+            <div className='grid md:grid-cols-3 grid-cols-1 mt-3 px-6 justify-center items-center w-full max-h-[800px] h-full bg-white'>
+                <Card className='flex flex-col justify-center py-2 items-center mx-5 h-[550px]'>
+                    <div className='text-4xl font-bold text-center'>
+                        <div className={`${jura.className} `}>Lens</div>
+                        <div className='text-xl text-gray-500 font-semibold text-gradient-orange ' >Active Style</div>
+                        <div className='text-lg text-gray-400 font-normal '>150$</div>
+                    </div>
+                    <div>
+                        <Image className='h-48  ' src='gucciex_.jpg' />
+                    </div>
+                    <Button className={ `h-10 bg-black font-bold mt-6 text-white hover:bg-white hover:text-black`} variant='faded' >Purchase Now</Button>
+
+                </Card>
+                <Card className='flex flex-col justify-center py-2 h-full items-center mx-5'>
+                    <div className='text-4xl font-bold text-center'>
+                        <div className={`${jura.className}`}>Lens</div>
+                        <div className='text-xl text-gray-500 font-semibold text-gradient-purple'>Dynamic Style</div>
+                        <div className='text-lg text-gray-400 font-normal'>120$</div>
+                    </div>
+                    <div>
+                        <Image className='h-48 ' src='gucciex_.jpg' />
+                    </div>
+                    <Button className={ `h-10 bg-black font-bold mt-6 text-white hover:bg-white hover:text-black`} variant='faded' >Purchase Now</Button>
+
+                </Card>
+                <Card className='flex flex-col justify-center py-2 h-full items-center mx-5'>
+                    <div className='text-4xl font-bold text-center'>
+                        <div className={`${jura.className}`}>Lens</div>
+                        <div className='text-xl text-gray-500 font-semibold text-gradient-grey'>Titanium Style</div>
+                        <div className='text-lg text-gray-400 font-normal'>180$</div>
+                    </div>
+                    <div>
+                        <Image className='h-48' src='gucciex_.jpg' />
+                    </div>
+                    <Button className={ `h-10 bg-black font-bold mt-6 text-white hover:bg-white hover:text-black`} variant='faded' >Purchase Now</Button>
+
+                </Card>
+            </div>
             <div className='flex flex-col items-center w-full h-full justify-center py-16 pt-32'>
                 <div className={`text-5xl font-bold ${jura.className} pb-6`}>Parts</div>
                 <div className='w-full h-full flex justify-between px-16'>
@@ -115,14 +158,14 @@ export default function Pricing({
                                 />
                             </div>
                             <div className='h-full w-1/3 flex items-center justify-center'>
-                                Full-Rimmed
+                                {curFrame}
                             </div>
                             <div className='h-full w-1/3 flex-col items-center justify-center p-2 pr-4'>
                                 <div className='w-full flex justify-end'>
                                     Frames
                                 </div>
                                 <div className='w-full flex justify-end'>
-                                    $288
+                                    $120
                                 </div>
                             </div>
                         </Card>
@@ -135,14 +178,14 @@ export default function Pricing({
                                 />
                             </div>
                             <div className='h-full w-1/3 flex items-center justify-center'>
-                                Multifocal
+                                {curLens}
                             </div>
                             <div className='h-full w-1/3 flex-col items-center justify-center p-2 pr-4'>
                                 <div className='w-full flex justify-end'>
                                     Lens
                                 </div>
                                 <div className='w-full flex justify-end'>
-                                    $288
+                                    $70
                                 </div>
                             </div>
                         </Card>
@@ -155,14 +198,14 @@ export default function Pricing({
                                 />
                             </div>
                             <div className='h-full w-1/3 flex items-center justify-center'>
-                                Skull
+                                {curTemple}
                             </div>
                             <div className='h-full w-1/3 flex-col items-center justify-center p-2 pr-4'>
                                 <div className='w-full flex justify-end'>
                                     Temple
                                 </div>
                                 <div className='w-full flex justify-end'>
-                                    $288
+                                    $50
                                 </div>
                             </div>
                         </Card>
@@ -172,7 +215,7 @@ export default function Pricing({
                             </div>
 
                             <div>
-                                Total <br/> $999
+                                Total <br /> $240
                             </div>
                         </div>
                     </Card>
@@ -188,7 +231,7 @@ export default function Pricing({
                                 setSelectedPart(part.label)
                             }}>{part.label}</SelectItem>}
                         </Select>
-                        <PartsGrid partsInfo={currentData} />
+                        <PartsGrid partsInfo={currentData} setCurFrame={setCurFrame} setCurLens={setCurLens} setCurTemple={setCurTemple} selectedPart={selectedPart} curFrame={curFrame} curLens={curLens} curTemple={curTemple} />
                     </div>
                 </div>
             </div>

@@ -10,6 +10,7 @@ import { IoLibrary } from "react-icons/io5";
 import { IoIosPricetag } from "react-icons/io";
 import { FaQuestionCircle } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const jura = Jura({
     weight: '400',
@@ -28,7 +29,105 @@ export default function LandingPage({
 }) {
     const [isScrollAtTop, setIsScrollAtTop] = useState(true);
     const [selectedPage, setSelectedPage] = useState('#Home');
-   
+    const cubeRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+    
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 1, 1).normalize();
+        scene.add(light);
+    
+        // Load GLTF glasses model
+        const glftLoader = new GLTFLoader();
+        let glassesModel:any;
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.load('/glasses/scene.gltf', (gltf) => {
+            glassesModel = new THREE.Object3D(); // Create an empty container
+            const model = gltf.scene;
+        
+            // Adjust model's position to center it within the container
+            model.position.set(0.2, 0.7, 0); // Adjust these values based on your model's dimensions
+            model.scale.set(0.2, 0.2, 0.2);
+            glassesModel.add(model); // Add the model to the container
+            scene.add(glassesModel); // Add the container to the scene
+            glassesModel.rotation.x = 0.5;
+            glassesModel.rotation.y = 0.5;
+        });
+    
+        // Cube for comparison
+        const cubeGeo = new THREE.BoxGeometry(3, 1, 3);
+        const cubeMaterial = new THREE.MeshStandardMaterial({ color: "#000000" });
+        const rotatingCube = new THREE.Mesh(cubeGeo, cubeMaterial);
+        rotatingCube.position.y = 1.5;
+        rotatingCube.position.z = 0.3;
+        rotatingCube.rotation.x = 0.5;
+        rotatingCube.rotation.y = 0.5;
+        // scene.add(rotatingCube);
+    
+        // Pedestal setup
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            roughness: 0.6, 
+            opacity: 0.3, 
+            transmission: 0.75, 
+            clearcoat: 0.5, 
+            ior: 1, 
+        });
+        const pedestalGeo = new THREE.BoxGeometry(4.5, 1.5, 4.5);
+        const pedestal = new THREE.Mesh(pedestalGeo, glassMaterial);
+        pedestal.position.y = 0.5;
+        pedestal.rotation.x = 0.5;
+        pedestal.rotation.y = 0.7;
+        scene.add(pedestal);
+    
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        if (cubeRef.current) {
+            cubeRef.current.appendChild(renderer.domElement);
+        }
+    
+        const resizeRendererToDisplaySize = () => {
+            if (cubeRef.current) {
+                const width = cubeRef.current.clientWidth;
+                const height = cubeRef.current.clientHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+        };
+    
+        const resizeObserver = new ResizeObserver(() => {
+            resizeRendererToDisplaySize();
+        });
+        if (cubeRef.current) {
+            resizeObserver.observe(cubeRef.current);
+        }
+    
+        const animate = () => {
+            requestAnimationFrame(animate);
+    
+            // Rotate the cube
+            rotatingCube.rotation.y += 0.005;
+    
+            // Rotate the glasses model if it exists
+            if (glassesModel) {
+                glassesModel.rotation.y += 0.005;
+            }
+    
+            renderer.render(scene, camera);
+        };
+        animate();
+    
+        return () => {
+            if (cubeRef.current) {
+                cubeRef.current.removeChild(renderer.domElement);
+                resizeObserver.unobserve(cubeRef.current);
+            }
+            renderer.dispose();
+        };
+    }, []);
 
 
     function goToPage(page: string): void {
@@ -40,6 +139,7 @@ export default function LandingPage({
         <div id='Home' className='flex md:flex-row  flex-col-reverse justify-between items-center  bg-gray-50 gridbg left-0 top-0 w-full'>
              <div className='lg:w-6/12 w-full h-[100dvh] bg-white flex flex-col justify-center md:pt-64  pt-32 pb-32 items-center'>
                 <div className={`${jura.className} text-2xl`}>Prism Glasses</div>
+                <div ref={cubeRef} className='w-full h-96' />
                 <div className=' w-full flex flex-col items-center space-y-4'>
                     <div className='flex justify-between w-3/6'>
                         <div>
@@ -49,19 +149,22 @@ export default function LandingPage({
                             </div>
                         </div>
                         <div>
-                            <div className={`text-sm text-gray-400`}>Active Users</div>
+                            <div className={`text-sm text-gray-400`}>Unique Combinations</div>
                             <div className={`font-bold text-xl text-blue-400`}>
-                                5000+
+                            1,000+ 
                             </div>
                         </div>
                     </div>
                     <div className='max-w-[500px] flex justify-center text-center w-full text-gray-400'>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </div>
+                    Join over 5,000 satisfied customers who have discovered the perfect blend of style and flexibility. Customize each part of your frames to fit your unique look, lifestyle, and vision needs. With options for frames, lenses, and temples, you’re in control of every detail.                    </div>
 
                     <div className='flex space-x-6'>
-                            <Button className='text-white bg-black'>Buy Now</Button>
-                            <Button variant='bordered'>View Prices</Button>
+                            <Button className='text-white bg-black'  onClick={() => {
+                                document.getElementById('Pricing')?.scrollIntoView({ behavior: 'smooth' })
+                            }}>Buy Now</Button>
+                            <Button variant='bordered'  onClick={() => {
+                                document.getElementById('Pricing')?.scrollIntoView({ behavior: 'smooth' })
+                            }}>View Prices</Button>
 
                     </div>
 
@@ -73,22 +176,22 @@ export default function LandingPage({
                 <div className='md:text-6xl text-5xl flex flex-col max-w-[400px] md:max-w-full text-center md:text-center space-y-3'>
 
                     <div className={`md:text-start text-center text-xl flex md:justify-center justify-center ${juraBold.className}`}>INVEST IN YOUR FUTURE</div>
-                    <div className='font-bold text-blue-400'>Saving &</div>
-                    <div className='font-bold'>investing are</div>
+                    <div className='font-bold text-blue-400'>Frames &</div>
+                    <div className='font-bold'>quality you</div>
                     <div className='font-bold flex justify-center space-x-4 '>
                         <div>
-                            made
+                        can
                         </div>
-                        <div className='text-violet-400'>simple</div>
+                        <div className='text-violet-400'>Trust</div>
                     </div>
                     <div className='text-lg md:ml-8 max-w-[500px] w-full pb-8'>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                    More than just eyewear—our frames offer the perfect balance of design, durability, and dependable quality.
                     </div>
                     <Card className='bg-blue-300/30 hidden md:flex w-full   justify-center space-y-2 p-4'>
 
                         <div className='flex justify-center w-full ml-4 space-x-2 '>
                             <Button className='flex flex-col bg-white  items-center px-4  h-16 w-64 cursor-pointer hover:bg-gray-100' onClick={() => {
-                                document.getElementById('Service')?.scrollIntoView({ behavior: 'smooth' });
+                                document.getElementById('Showcase')?.scrollIntoView({ behavior: 'smooth' });
                             }}>
                                 <div className='flex flex-row items-center px-4 justify-between h-16 w-64'>
 
@@ -98,7 +201,7 @@ export default function LandingPage({
                                 <div className={`flex justify-start items-start text-start w-full ml-12 ${jura.className}`}>What We Do</div>
                             </Button>
                             <Button className='flex flex-col bg-white items-center px-4  h-16 w-64 cursor-pointer hover:bg-gray-100' onClick={() => {
-                                document.getElementById('Pests')?.scrollIntoView({ behavior: 'smooth' })
+                                document.getElementById('Goal')?.scrollIntoView({ behavior: 'smooth' })
                             }}>
                                 <div className='flex flex-row items-center px-4 justify-between h-16 w-64'> 
 
@@ -120,14 +223,14 @@ export default function LandingPage({
                                 <div className={`flex justify-start items-start text-start w-full ml-12 ${jura.className}`}>Price Comparison</div>
                             </Button>
                             <Button className='flex bg-white flex-col items-center px-4  h-16 w-64 cursor-pointer hover:bg-gray-100' onClick={() => {
-                                document.getElementById('Qna')?.scrollIntoView({ behavior: 'smooth' })
+                                document.getElementById('Team')?.scrollIntoView({ behavior: 'smooth' })
                             }}>
                                 <div className='flex flex-row items-center px-4 justify-between h-16 w-64'>
 
-                                    <div className={`$ flex font-bold items-center justify-between space-x-2`}> <FaQuestionCircle></FaQuestionCircle> <p>Q&A</p></div>
+                                    <div className={`$ flex font-bold items-center justify-between space-x-2`}> <FaQuestionCircle></FaQuestionCircle> <p>Team</p></div>
                                     <div><FaArrowRightLong /></div>
                                 </div>
-                                <div className={`flex justify-start items-start text-start w-full ml-12 ${jura.className}`}>Often Asked Questions</div>
+                                <div className={`flex justify-start items-start text-start w-full ml-12 ${jura.className}`}>Meet the Lens Team</div>
                             </Button>
                         </div>
                     </Card>
